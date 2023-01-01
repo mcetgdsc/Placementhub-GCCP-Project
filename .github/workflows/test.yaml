@@ -19,7 +19,7 @@ jobs:
       #setup gcloud CLI
     - uses: 'google-github-actions/auth@v1'
       with:
-        service_account: ${{secrets.RUN_SA_KEY}}
+        workload_identity_provider: ${{secrets.RUN_SA_KEY}}
         project_id: ${{secrets.RUN_PROJECT}}
 #     Buid and push image to Google container Registry :
     - name: Build
