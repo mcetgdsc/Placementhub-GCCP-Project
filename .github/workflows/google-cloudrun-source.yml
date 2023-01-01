@@ -82,15 +82,13 @@ jobs:
           --tag "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:$GITHUB_SHA"
     #Deploy image to Cloud Run :
       - name : Deploy to Cloud Run
-        run : |-
-          gcloud run deploy ${{ env.SERVICE }} \
-          --quiet \
-          --region ${{ env.REGION }} \
-          --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:$GITHUB_SHA" \ 
-          --platform managed \
-          --allow-unauthenticated \
-          --add-cloudsql-instances "${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.SERVICE }}" \
-          --set-env-vars CLOUD_SQL_CONNECTION_NAME="${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.SERVICE }}"
+        id: deploy
+        uses: google-github-actions/deploy-cloudrun@v0
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}
+          # NOTE: If required, update to the appropriate source folder
+          source: ./
       # If required, use the Cloud Run url output in later steps
       - name: Show Output
         run: echo ${{ steps.deploy.outputs.url }}
