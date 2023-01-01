@@ -85,19 +85,35 @@ jobs:
           registry: '${{ env.GAR_LOCATION }}-docker.pkg.dev'
 
       - name: Build and Push Container
-        run: |-
-          docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}" ./
-          docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
+#         run: |-
+#           docker build -t "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}" ./
+#           docker push "${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
+
+      - name: Build
+          run : |-
+            gcloud builds submit \
+            --quiet \
+            --tag "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}"
       # END - Docker auth and build
 
       - name: Deploy to Cloud Run
         id: deploy
         uses: google-github-actions/deploy-cloudrun@v0
-        with:
-          service: ${{ env.SERVICE }}
-          region: ${{ env.REGION }}
-          # NOTE: If using a pre-built image, update the image name here
-          image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
+#         with:
+#           service: ${{ env.SERVICE }}
+#           region: ${{ env.REGION }}
+#           # NOTE: If using a pre-built image, update the image name here
+#           image: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}
+        - name : Deploy to Cloud Run
+          run : |-
+            gcloud run deploy "${{ env.SERVICE }}" \
+              --quiet \
+              --region ${{ env.REGION }} \
+              --image "gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE }}:${{ github.sha }}" \ 
+              --platform managed \
+              --allow-unauthenticated \
+              --add-cloudsql-instances "${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.SERVICE }}" \
+              --set-env-vars CLOUD_SQL_CONNECTION_NAME="${{ env.PROJECT_ID }}:${{ env.REGION }}:${{ env.SERVICE }}"
           
 
       # If required, use the Cloud Run url output in later steps
