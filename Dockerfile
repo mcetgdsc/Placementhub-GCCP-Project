@@ -48,4 +48,4 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 # .gcloudignore
 
 # Exclude git history and configuration.
-.gitignore
+# .gitignore
