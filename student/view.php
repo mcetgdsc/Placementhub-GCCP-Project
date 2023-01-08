@@ -16,30 +16,37 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true){
     $user = $_SESSION['username'];
     if($_SERVER['REQUEST_METHOD']=="POST"){
         require "../dbconnect.php";
+
+        // Create a PDO object
+        // $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+        $conn = new PDO($dsn, $user, $password);
+
         $category = $_POST['category'];
         $location1 = $_POST['location1'];
         $requirement = $_POST['requirement'];
         $budget = $_POST['budget'];
         $message = $_POST['message'];
 
-        $sql1 = "select * from `admins` where title='$title'";
-        $result1 = mysqli_query($conn,$sql1) or die(mysqli_error($conn));
-        $data = mysqli_fetch_array($result1);
+        // Execute a SQL statement
+        $result1 = $conn->query("select * from `admins` where title='$title'");
+        $data = $result1->fetch();
         $adminname = $data['adminname'];
-       
-        $sql3 = "select * from `".$adminname."admin` where title= '$title' and admins='$user'";
-        $result3 = mysqli_query($conn,$sql3) or die(mysqli_error($conn));
-        $num = mysqli_num_rows($result3);
-      if($num == 0){  
-            $sql="insert into `".$adminname."admin` values(null,'$user','$date','$category',' $location1','$requirement'
-            ,'$budget','$message','$title',1)";
-            $result= mysqli_query($conn,$sql) or die(mysqli_error($conn));
 
-            $sql2="insert into `".$_SESSION['username']."student` values('$adminname','$date','$title')";
-            $result2= mysqli_query($conn,$sql2) or die(mysqli_error($conn));
+        // Execute a SQL statement
+        $result3 = $conn->query("select * from `".$adminname."admin` where title= '$title' and admins='$user'");
+        $num = $result3->rowCount();
+      if($num == 0){  
+            // Execute a SQL statement
+            $result = $conn->query("insert into `".$adminname."admin` values(null,'$user','$date','$category',' $location1','$requirement'
+            ,'$budget','$message','$title',1)");
+
+            // Execute a SQL statement
+            $result2 = $conn->query("insert into `".$_SESSION['username']."student` values('$adminname','$date','$title')");
 
             if(!$result){
-                mysqli_error($result);
+                // Get error information
+                $error = $conn->errorInfo();
+                echo $error[2];
             }
             else{
                 $showerror = true;
@@ -48,9 +55,8 @@ if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true){
             $showalert = true;
          }   
     }
-
-
 ?>
+
 
 
 
@@ -169,10 +175,16 @@ background-size: cover;
         ?>    
        
         <?php 
+            // require "../dbconnect.php";
+            // $sql = "select * from `admins` where title='$title'";
+            // $result = mysqli_query($conn,$sql) or die(mysqli_error($sql));
+            // $data = mysqli_fetch_array($result);
             require "../dbconnect.php";
-            $sql = "select * from `admins` where title='$title'";
-            $result = mysqli_query($conn,$sql) or die(mysqli_error($sql));
-            $data = mysqli_fetch_array($result);
+            $stmt = $conn->prepare("SELECT * FROM admins WHERE title = :title");
+            $stmt->bindParam(':title', $title);
+            $stmt->execute();
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        
 
             echo
             '<div class="post" data-aos="flip-right"  data-aos-duration="3000">

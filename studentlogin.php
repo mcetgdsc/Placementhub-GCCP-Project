@@ -5,22 +5,21 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $sql = "SELECT * from `internship`.`studentsignup` where username ='$username'";
-    $result = mysqli_query($conn, $sql);
-    $num = mysqli_num_rows($result);
+    $stmt = $conn->prepare("SELECT * from `internship`.`studentsignup` where username = ?");
+    $stmt->execute([$username]);
+    $result = $stmt->fetchAll();
+    $num = count($result);
     if ($num == 1) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            if (password_verify($password, $row['password'])) {
-                $login = true;
-                session_start();
-                $_SESSION['loggedin'] = true;
-                $_SESSION['username'] = $username;
-                //$_SESSION['fullscreen']= true;
-                header("location:student/index.php");
-            } else {
-
-                $showerror = true;
-            }
+        $row = $result[0];
+        if (password_verify($password, $row['password'])) {
+            $login = true;
+            session_start();
+            $_SESSION['loggedin'] = true;
+            $_SESSION['username'] = $username;
+            //$_SESSION['fullscreen']= true;
+            header("location:student/index.php");
+        } else {
+            $showerror = true;
         }
     } else {
         $showerror = true;
@@ -28,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
 }
 
 ?>
+
 <?php require "student/nav.php";
 
 if ($showerror == true) {

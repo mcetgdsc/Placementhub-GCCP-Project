@@ -2,65 +2,68 @@
 session_start();
 
 if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true){
-  header("location:login.php");
-  exit;
-  
-};
-#$page=$_GET['page'];
-?>
-  <?php
+    header("location:login.php");
+    exit;
+}
+
 $showalert = true;
 $showerror = true;
 
-#if($page=="sig"){
-
 if($_SERVER['REQUEST_METHOD']=="POST"){
+    try {
+      require "../dbconnect.php";
+    // $conn = new PDO("dbname=internship", "placementhub", "1234");
+    $conn = new PDO($dsn, $user, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-   include "../dbconnect.php";
-   if(isset($_POST['submit'])){
-   $usernam =$_POST['username'];
-   $password =$_POST['password'];
-   $cpassword =$_POST['cpassword'];
-   $sql1 = "SELECT * from studentsignup where username= '".$usernam."' and cpassword='".$cpassword."'";
-   $result1 = mysqli_query($conn , $sql1) or die(mysqli_error($conn));
-   
+    if(isset($_POST['submit'])){
+      $username = $_POST['username'];
+      $password = $_POST['password'];
+      $cpassword = $_POST['cpassword'];
 
-   $num = mysqli_num_rows($result1);
-   if($num == 0){
-       if($password == $cpassword && $username !="")
-       {
-           $password = password_hash($password,PASSWORD_DEFAULT);
-           $sql2="INSERT INTO `internship`.`studentsignup`(username, password, cpassword) VALUES ('$usernam','$password','$cpassword')";
-           $result = mysqli_query($conn , $sql2) or die( mysqli_error($conn));
-           
+      $stmt = $conn->prepare("SELECT * FROM studentsignup WHERE username = :username AND cpassword = :cpassword");
+      $stmt->bindParam(':username', $username);
+      $stmt->bindParam(':cpassword', $cpassword);
+      $stmt->execute();
 
-           $table = $usernam.'studentsignup';
-           $sql ="CREATE TABLE `internship`.`$table`(
-              username varchar(255),
-              password varchar(255),
-              cpassword varchar(255)
-          )";
-          $result = mysqli_query($conn,$sql) or die(mysqli_error($conn));
+      $num = $stmt->rowCount();
+      if($num == 0){
+        if($password == $cpassword && $username != "") {
+          $password = password_hash($password, PASSWORD_DEFAULT);
+          $stmt = $conn->prepare("INSERT INTO studentsignup (username, password, cpassword) VALUES (:username, :password, :cpassword)");
+        //   $stmt = $conn->prepare("INSERT INTO studentsignup VALUES (:username, :password, :cpassword)");
 
-          # header("location:student.php");
-       }
-       else{
-           $showalert = true;
-       }
-   }
-   else{
-       $showerror = true ;
-   }
+          $stmt->bindParam(':username', $username);
+          $stmt->bindParam(':password', $password);
+          $stmt->bindParam(':cpassword', $cpassword);
+          $stmt->execute();
 
-    }else{
-        echo "error";
+          $table = $username . 'studentsignup';
+          $stmt = $conn->prepare("CREATE TABLE $table (username VARCHAR(255), password VARCHAR(255), cpassword VARCHAR(255))");
+          $stmt->execute();
+        }
+        else {
+          $showalert = true;
+        }
+      }
+      else {
+        $showerror = true;
+      }
     }
+    else {
+      echo "error";
+    }
+  }
+  catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+  }
+  $conn = null;
 }
+else {
 
-else{
-    
 }
 ?>
+
 
 <?php include "nav.php";  ?> 
 <!DOCTYPE html>

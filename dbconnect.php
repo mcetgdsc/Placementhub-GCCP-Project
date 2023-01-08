@@ -1,20 +1,17 @@
 <?php
-$SERVER = "34.100.218.188";
-$username = 'placementhub';
-$password = '1234';
-$database = 'internship';
-$cloud_sql_connection_name = getenv("CLOUD_SQL_CONNECTION_NAME");
-$socket_dir = getenv('DB_SOCKET_DIR')?: '/cloudsql';
+// ----------
 
-$dsn = sprintf(
-'mysql:dbname=%s;unix_socket=%s/%s',
-$db_name,
-$socket_dir,
-$cloud_sql_connection_name
-);
-$conn = mysqli_connect($dsn,$SERVER, $username, $password, $database);
-if (!$conn) {
-    mysqli_error($conn);
+$dsn = "mysql:dbname=internship;host=34.100.218.188;port=PORT";
+$user = "placementhub";
+$password = "1234";
+
+try {
+    $conn = new PDO($dsn, $user, $password);
+    // set the PDO error mode to exception
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // echo "Connected to Google Cloud SQL successfully";
+} catch(PDOException $e) {
+    echo "Connection failed: " . $e->getMessage();
 }
-// echo "connect successfull";
+
 ?>

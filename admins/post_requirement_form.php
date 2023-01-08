@@ -2,40 +2,49 @@
 session_start();
 // session start
 if(!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] != true){
-  header("location: login.php");
-  exit;
+    header("location: login.php");
+    exit;
 };
+$showalert = false;
+$showerror = false;
+$date1 = date("d-m-Y");
+if($_SERVER['REQUEST_METHOD']=="POST"){
+    require "../dbconnect.php";
+  try {
+    // $conn = new PDO("mysql:host=34.100.218.188;dbname=internship", "username", "password");
+    $conn = new PDO($dsn, $user, $password);
+
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $title = $_POST['title'];
+    $comment = $_POST['comment'];
+    $industry = $_POST['industry'];
+    $professional = $_POST['professional'];
+    $location = $_POST['location'];
+    $name= $_SESSION['username'];
+    if($title != "" && $comment != "" && $industry != "" && $professional != "" && $location != "") {
+      $stmt = $conn->prepare("INSERT INTO admins VALUES (null, :title, :comment, :industry, :professional, :location, :date1, :name, 1)");
+      $stmt->bindParam(':title', $title);
+      $stmt->bindParam(':comment', $comment);
+      $stmt->bindParam(':industry', $industry);
+      $stmt->bindParam(':professional', $professional);
+      $stmt->bindParam(':location', $location);
+      $stmt->bindParam(':date1', $date1);
+      $stmt->bindParam(':name', $name);
+      $stmt->execute();
+      $showalert = true;
+    }
+    else {
+      $showerror = true;
+    }
+  }
+  catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+  }
+  $conn = null;
+}
 ?>
 
-<!-- backend function toselet data insert data -->
-<?php
-     $showalert = false;
-     $showerror = false;
-     $date1 = date("d-m-Y");
-     if($_SERVER['REQUEST_METHOD']=="POST"){
-      require "../dbconnect.php";
-      $title = $_POST['title'];
-      $comment = $_POST['comment'];
-      $industry = $_POST['industry'];
-      $professional = $_POST['professional'];
-      $location = $_POST['location'];
-      $name= $_SESSION['username'];
-      if($title != "" && $comment != "" && $industry != "" && $professional != "" && $location != ""){
-          $sql = "INSERT INTO `admins` VALUES(null,'$title','$comment',
-          '$industry','$professional','$location','$date1','$name',1)" ; 
-          $result = mysqli_query($conn,$sql) or die(mysqli_error($conn));
-          if(!$result){
-                  mysqli_error($result);
-          }
-          else{
-            $showalert = true;
-          }
-      }
-      else{
-         $showerror = true;
-      }
-    }    
-?>
 
 <!DOCTYPE html>
 <html lang="en">
