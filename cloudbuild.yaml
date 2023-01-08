@@ -4,4 +4,4 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['push', 'gcr.io/sublime-index-373118/github.com/mcetgdsc/placementhub-gccp-project:$COMMIT_SHA']
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['run' 'deploy' 'placementhub' '--image gcr.io/sublime-index-373118/github.com/mcetgdsc/placementhub-gccp-project@sha256:19051969d56827134b0b2b6b233dbff03e22e0ed50eb0313339990211fd6e144' '--platform managed' '--region=asia-south1' '--allow-unauthenticated' '--add-cloudsql-instances sublime-index-373118:asia-south1:placementhub' '--set-env-vars CLOUD_SQL_CONNECTION_NAME=sublime-index-373118:asia-south1:placementhub']
+  args: ['run' 'deploy' 'placementhub' '--image gcr.io/sublime-index-373118/github.com/mcetgdsc/placementhub-gccp-project@sha256:latest' '--platform managed' '--region=asia-south1' '--allow-unauthenticated' '--add-cloudsql-instances sublime-index-373118:asia-south1:placementhub' '--set-env-vars CLOUD_SQL_CONNECTION_NAME=sublime-index-373118:asia-south1:placementhub']
